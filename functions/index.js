@@ -126,7 +126,7 @@ exports.telemetry = onRequest(async (req, res) => {
     }
 
     if (req.method === "GET") {
-      const {deviceId, limit = 100} = req.query;
+      const {deviceId, limit = 100, format} = req.query;
       if (!deviceId) {
         return res.status(400).send("Bad Request: Missing deviceId query parameter.");
       }
@@ -143,6 +143,40 @@ exports.telemetry = onRequest(async (req, res) => {
           timestamp: data.timestamp.toDate().toISOString(),
         };
       });
+
+      if (format === "csv") {
+        if (telemetryData.length === 0) {
+          res.status(200).header("Content-Type", "text/csv").send("");
+          return;
+        }
+
+        const allKeys = new Set();
+        telemetryData.forEach((item) => {
+          Object.keys(item).forEach((key) => allKeys.add(key));
+        });
+        const headers = Array.from(allKeys);
+
+        const csvRows = [headers.join(",")];
+
+        telemetryData.forEach((item) => {
+          const row = headers.map((header) => {
+            const value = item[header];
+            if (value === null || value === undefined) {
+              return "";
+            }
+            const stringValue = String(value);
+            // Escape quotes and handle commas
+            if (stringValue.includes('"') || stringValue.includes(",")) {
+              return `"${stringValue.replace(/"/g, '""')}"`;
+            }
+            return stringValue;
+          }).join(",");
+          csvRows.push(row);
+        });
+
+        res.status(200).header("Content-Type", "text/csv").send(csvRows.join("\n"));
+        return;
+      }
 
       return res.status(200).json(telemetryData);
     }

@@ -16,6 +16,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (device) {
       document.getElementById("device-name").textContent = device.name;
       document.getElementById("device-id").textContent = `ID: ${device.id}`;
+
+      // Add download link
+      const downloadLink = document.createElement("a");
+      downloadLink.href = `/telemetry?deviceId=${deviceId}&format=csv`;
+      downloadLink.textContent = "Download as CSV";
+      downloadLink.className = "btn btn-secondary btn-sm ms-2";
+      downloadLink.download = `telemetry-${deviceId}.csv`; // Suggest a filename
+      document.getElementById("device-name").appendChild(downloadLink);
     } else {
       document.getElementById("device-name").textContent = "Device not found";
       document.getElementById("device-id").textContent = `ID: ${deviceId}`;
