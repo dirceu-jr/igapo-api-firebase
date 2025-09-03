@@ -1,7 +1,6 @@
 const {setGlobalOptions} = require("firebase-functions");
 const {onRequest} = require("firebase-functions/https");
 const logger = require("firebase-functions/logger");
-const crypto = require("crypto");
 
 // for Firestore
 const { initializeApp } = require("firebase-admin/app");
@@ -43,9 +42,8 @@ exports.devices = onRequest(async (req, res) => {
         if (!name) {
           return res.status(400).send("Missing name in request body.");
         }
-        const apiKey = crypto.randomBytes(16).toString("hex");
-        const docRef = await devicesCol.add({name, apiKey});
-        const newDevice = {id: docRef.id, name, apiKey};
+        const docRef = await devicesCol.add({name});
+        const newDevice = {id: docRef.id, name};
         // logger.info("New device added", newDevice);
         res.status(201).json(newDevice);
         break;
@@ -88,37 +86,58 @@ exports.devices = onRequest(async (req, res) => {
 });
 
 exports.telemetry = onRequest(async (req, res) => {
-  if (req.method !== "POST") {
-    return res.status(405).send("Method Not Allowed");
-  }
-
-  const apiKey = req.get("X-API-Key");
-  if (!apiKey) {
-    return res.status(401).send("Unauthorized: Missing X-API-Key header.");
-  }
-
-  const telemetryData = req.body;
-  if (!telemetryData || Object.keys(telemetryData).length === 0) {
-    return res.status(400).send("Bad Request: Missing telemetry data.");
-  }
-
   try {
-    const devicesCol = db.collection("devices");
-    const snapshot = await devicesCol.where("apiKey", "==", apiKey).limit(1).get();
+    if (req.method === "POST") {
+      const apiKey = req.get("X-API-Key"); // This is now the document ID
+      if (!apiKey) {
+        return res.status(401).send("Unauthorized: Missing X-API-Key header.");
+      }
 
-    if (snapshot.empty) {
-      return res.status(403).send("Forbidden: Invalid API Key.");
+      const telemetryData = req.body;
+      if (!telemetryData || Object.keys(telemetryData).length === 0) {
+        return res.status(400).send("Bad Request: Missing telemetry data.");
+      }
+
+      const deviceRef = db.collection("devices").doc(apiKey);
+      const deviceDoc = await deviceRef.get();
+
+      if (!deviceDoc.exists) {
+        return res.status(403).send("Forbidden: Invalid API Key.");
+      }
+
+      const telemetryCol = deviceDoc.ref.collection("telemetry");
+
+      await telemetryCol.add({
+        ...telemetryData,
+        timestamp: FieldValue.serverTimestamp(),
+      });
+
+      return res.status(202).send("Accepted");
     }
 
-    const deviceDoc = snapshot.docs[0];
-    const telemetryCol = deviceDoc.ref.collection("telemetry");
+    if (req.method === "GET") {
+      const {deviceId, limit = 100} = req.query;
+      if (!deviceId) {
+        return res.status(400).send("Bad Request: Missing deviceId query parameter.");
+      }
 
-    await telemetryCol.add({
-      ...telemetryData,
-      timestamp: FieldValue.serverTimestamp(),
-    });
+      const telemetryCol = db.collection("devices").doc(deviceId).collection("telemetry");
+      const snapshot = await telemetryCol.orderBy("timestamp", "desc").limit(Number(limit)).get();
 
-    res.status(202).send("Accepted");
+      const telemetryData = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          // Convert Firestore Timestamp to ISO string for easier use in JS
+          timestamp: data.timestamp.toDate().toISOString(),
+        };
+      });
+
+      return res.status(200).json(telemetryData);
+    }
+
+    return res.status(405).send("Method Not Allowed");
   } catch (error) {
     // logger.error("Error processing telemetry:", error);
     res.status(500).send("Internal Server Error");

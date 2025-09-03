@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
       devices.forEach(device => {
         const li = document.createElement('li');
         li.className = 'list-group-item d-flex justify-content-between align-items-center';
-        li.innerHTML = `<span>${device.name} (${device.apiKey})</span> <button class="btn btn-danger btn-sm delete-btn" data-id="${device.id}">Delete</button>`;
+        li.innerHTML = `<span>${device.name} (${device.id})</span> <button class="btn btn-danger btn-sm delete-btn" data-id="${device.id}">Delete</button>`;
         deviceListEl.appendChild(li);
       });
     } catch (error) {
