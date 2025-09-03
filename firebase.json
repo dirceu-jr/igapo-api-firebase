@@ -29,6 +29,10 @@
       {
         "source": "/devices",
         "function": "devices"
+      },
+      {
+        "source": "/telemetry",
+        "function": "telemetry"
       }
     ]
   },

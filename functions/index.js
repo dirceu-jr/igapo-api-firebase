@@ -86,3 +86,41 @@ exports.devices = onRequest(async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
+
+exports.telemetry = onRequest(async (req, res) => {
+  if (req.method !== "POST") {
+    return res.status(405).send("Method Not Allowed");
+  }
+
+  const apiKey = req.get("X-API-Key");
+  if (!apiKey) {
+    return res.status(401).send("Unauthorized: Missing X-API-Key header.");
+  }
+
+  const telemetryData = req.body;
+  if (!telemetryData || Object.keys(telemetryData).length === 0) {
+    return res.status(400).send("Bad Request: Missing telemetry data.");
+  }
+
+  try {
+    const devicesCol = db.collection("devices");
+    const snapshot = await devicesCol.where("apiKey", "==", apiKey).limit(1).get();
+
+    if (snapshot.empty) {
+      return res.status(403).send("Forbidden: Invalid API Key.");
+    }
+
+    const deviceDoc = snapshot.docs[0];
+    const telemetryCol = deviceDoc.ref.collection("telemetry");
+
+    await telemetryCol.add({
+      ...telemetryData,
+      timestamp: FieldValue.serverTimestamp(),
+    });
+
+    res.status(202).send("Accepted");
+  } catch (error) {
+    // logger.error("Error processing telemetry:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
