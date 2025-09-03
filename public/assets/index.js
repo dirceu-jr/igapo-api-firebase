@@ -2,9 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (window.location.hostname === 'localhost') {
     var apiUrl = 'http://127.0.0.1:5001/igapo-api/us-central1/devices';
   } else {
-    // IMPORTANT/TODO:
-    // - Replace this with your actual Firebase Function URL;
-    var apiUrl = 'https://us-central1-your-project-id.cloudfunctions.net/devices';
+    var apiUrl = 'https://us-central1-igapo-api.cloudfunctions.net/devices';
   }
 
   const addDeviceModalEl = document.getElementById('add-device-modal');
