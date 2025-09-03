@@ -38,19 +38,24 @@ exports.devices = onRequest(async (req, res) => {
         break;
       }
       case "POST": {
-        const {name} = req.body;
+        const {name, latitude, longitude} = req.body;
         if (!name) {
           return res.status(400).send("Missing name in request body.");
         }
-        const docRef = await devicesCol.add({name});
-        const newDevice = {id: docRef.id, name};
+        const newDeviceData = {name};
+        if (latitude !== undefined && longitude !== undefined) {
+          newDeviceData.latitude = Number(latitude);
+          newDeviceData.longitude = Number(longitude);
+        }
+        const docRef = await devicesCol.add(newDeviceData);
+        const newDevice = {id: docRef.id, ...newDeviceData};
         // logger.info("New device added", newDevice);
         res.status(201).json(newDevice);
         break;
       }
       case "PUT": {
         const {id} = req.query;
-        const {name} = req.body;
+        const {name, latitude, longitude} = req.body;
         if (!id) {
           return res.status(400).send("Missing device ID in query string.");
         }
@@ -58,8 +63,13 @@ exports.devices = onRequest(async (req, res) => {
           return res.status(400).send("Missing name in request body.");
         }
         const deviceRef = devicesCol.doc(String(id));
-        await deviceRef.update({name});
-        const updatedDevice = {id, name};
+        const updateData = {};
+        if (name) updateData.name = name;
+        if (latitude !== undefined) updateData.latitude = Number(latitude);
+        if (longitude !== undefined) updateData.longitude = Number(longitude);
+
+        await deviceRef.update(updateData);
+        const updatedDevice = {id, ...updateData};
         // logger.info(`Device ${id} updated.`, updatedDevice);
         res.status(200).json(updatedDevice);
         break;
