@@ -24,6 +24,12 @@
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/devices",
+        "function": "devices"
+      }
     ]
   },
   "emulators": {
