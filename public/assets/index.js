@@ -66,6 +66,9 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
           const response = await fetch(`${apiUrl}?id=${deviceId}`, {
             method: 'DELETE',
+            headers: {
+              'X-Auth-Token': document.getElementById("auth").value
+            },
           });
 
           if (!response.ok && response.status !== 204) { // 204 No Content is a success status for DELETE
@@ -108,6 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'X-Auth-Token': document.getElementById("auth").value
           },
           body: JSON.stringify(deviceData),
         });
@@ -148,6 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
+            'X-Auth-Token': document.getElementById("auth").value
           },
           body: JSON.stringify(deviceData),
         });

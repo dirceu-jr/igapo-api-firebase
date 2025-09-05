@@ -22,9 +22,15 @@ const db = getFirestore();
 // this will be the maximum concurrent request count.
 setGlobalOptions({ maxInstances: 10 });
 
+const X_AUTH_TOKEN = 'your-auth-token';
+
 // Expose the devices API
 exports.devices = onRequest(async (req, res) => {
   const devicesCol = db.collection("devices");
+
+  if (["POST", "PUT", "DELETE"].includes(req.method) && req.get('X-Auth-Token') !== X_AUTH_TOKEN) {
+    return res.status(403).send("Forbidden");
+  }
 
   try {
     switch (req.method) {
