@@ -20,10 +20,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       // Add download link
       const downloadLink = document.createElement("a");
       downloadLink.href = `/telemetry?deviceId=${deviceId}&format=csv`;
-      downloadLink.textContent = "Download as CSV";
-      downloadLink.className = "btn btn-secondary btn-sm ms-2";
+      downloadLink.textContent = "Download data as CSV";
       downloadLink.download = `telemetry-${deviceId}.csv`; // Suggest a filename
-      document.getElementById("device-name").appendChild(downloadLink);
+      document.getElementById("download-link").appendChild(downloadLink);
     } else {
       document.getElementById("device-name").textContent = "Device not found";
       document.getElementById("device-id").textContent = `ID: ${deviceId}`;
