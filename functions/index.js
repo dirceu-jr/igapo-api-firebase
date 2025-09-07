@@ -104,12 +104,11 @@ exports.devices = onRequest(async (req, res) => {
 exports.telemetry = onRequest(async (req, res) => {
   try {
     if (req.method === "POST") {
-      const apiKey = req.get("X-API-Key"); // This is now the document ID
+      const {"X-API-Key": apiKey, ...telemetryData} = req.body;
       if (!apiKey) {
-        return res.status(401).send("Unauthorized: Missing X-API-Key header.");
+        return res.status(401).send("Unauthorized: Missing X-API-Key in request body.");
       }
 
-      const telemetryData = req.body;
       if (!telemetryData || Object.keys(telemetryData).length === 0) {
         return res.status(400).send("Bad Request: Missing telemetry data.");
       }
