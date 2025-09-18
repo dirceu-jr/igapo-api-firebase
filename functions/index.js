@@ -1,5 +1,5 @@
-const {setGlobalOptions} = require("firebase-functions");
-const {onRequest} = require("firebase-functions/https");
+const { setGlobalOptions } = require("firebase-functions");
+const { onRequest } = require("firebase-functions/https");
 const logger = require("firebase-functions/logger");
 
 // for Firestore
@@ -98,9 +98,9 @@ exports.devices = onRequest(async (req, res) => {
 
 exports.telemetry = onRequest(async (req, res) => {
   if (req.method === "POST") {
-    const {"X-API-Key": apiKey, ...telemetryData} = req.body;
+    const {"API-Key": apiKey, ...telemetryData} = req.body;
     if (!apiKey) {
-      return res.status(401).send("Unauthorized: Missing X-API-Key in request body.");
+      return res.status(401).send("Unauthorized: Missing API-Key in request body.");
     }
 
     if (!telemetryData || Object.keys(telemetryData).length === 0) {

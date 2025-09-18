@@ -10,8 +10,9 @@ A demonstration is hosted at https://igapo-api.web.app/.
 
 ## Authentication
 
--   The `/devices` endpoint requires an `X-Auth-Token` header for `POST`, `PUT`, and `DELETE` requests. The token should be set in `X_AUTH_TOKEN` constant in  `functions/index.js`.
--   The `/telemetry` endpoint for submitting data (`POST`) requires an `X-API-Key` in the request body, which corresponds to the device's ID.
+-   The `/devices` endpoint requires an `X-Auth-Token` header for `POST`, `PUT`, and `DELETE` requests. The token should be set in `X_AUTH_TOKEN` constant in `functions/index.js`.
+
+-   The `/telemetry` endpoint for submitting data (`POST`) requires an `API-Key` in the request body, which corresponds to the device's ID.
 
 ## `/devices`
 
@@ -83,12 +84,12 @@ Submits telemetry data from a device. The device ID is used as the API key.
 -   **Body**:
     ```json
     {
-      "X-API-Key": "<your_device_id>",
+      "API-Key": "<your_device_id>",
       "temperature": 25.5,
       "humidity": 60
     }
     ```
-    -   `X-API-Key` (string, required): The ID of the device sending data.
+    -   `API-Key` (string, required): The ID of the device sending data.
     -   Any other key-value pairs are stored as telemetry data. A server-side timestamp is automatically added.
 
 ### `GET /telemetry`
